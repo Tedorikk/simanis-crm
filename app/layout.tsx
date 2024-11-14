@@ -28,9 +28,9 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
+      <main className="flex items-center justify-center min-h-screen overflow-auto">
+        {children}
+      </main>
       </body>
     </html>
   );
