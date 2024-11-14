@@ -1,9 +1,11 @@
+import { cookies } from "next/headers"
+
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
-import { cookies } from "next/headers"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -35,10 +37,18 @@ export default async function RootLayout({
       >
         <SidebarProvider defaultOpen={defaultOpen}>
           <AppSidebar />
-          <main>
-            <SidebarTrigger />
-            {children}
-          </main>
+          <SidebarInset>
+            <header className="flex h-16 shrink-0 items-center justify-between border-b px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Avatar>
+                <AvatarImage src="https://github.com/shadcn.png" />
+                <AvatarFallback>ADM</AvatarFallback>
+              </Avatar>
+            </header>
+            <main className="flex-1 overflow-auto">
+              {children}
+            </main>
+          </SidebarInset>
         </SidebarProvider>
       </body>
     </html>
