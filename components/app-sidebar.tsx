@@ -1,4 +1,6 @@
-import { Home, Map, MapPin, Contact, ChartCandlestick,} from "lucide-react"
+"use client";
+
+import { Home, Map, MapPin, Contact, ChartCandlestick } from "lucide-react"
 
 import {
   Sidebar,
@@ -12,6 +14,8 @@ import {
 } from "@/components/ui/sidebar"
 
 import Link from 'next/link'
+import { clsx } from 'clsx'
+import { usePathname } from 'next/navigation'
 
 // Menu items.
 const items = [
@@ -43,6 +47,7 @@ const items = [
 ]
 
 export function AppSidebar() {
+  const pathname = usePathname();
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
@@ -51,7 +56,12 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem 
+                  key={item.title} 
+                  className={clsx("bg-transparent", {
+                    "bg-sky-200 rounded-md border-transparent": pathname === item.url,
+                  })}
+                >
                   <SidebarMenuButton asChild>
                     <Link href={item.url}>
                       <item.icon />
@@ -65,5 +75,5 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
