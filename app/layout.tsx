@@ -26,16 +26,9 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-      <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-      >
       <main className="flex items-center justify-center min-h-screen overflow-auto">
         {children}
       </main>
-      </ThemeProvider>
       </body>
     </html>
   );
