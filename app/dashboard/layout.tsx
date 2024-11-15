@@ -14,16 +14,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 import { useRouter } from 'next/navigation'
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
-import { Button } from "@/components/ui/button"
 
 export default function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { setTheme } = useTheme()
   const router = useRouter();
 
   const handleLogout = async () => {

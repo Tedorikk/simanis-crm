@@ -13,7 +13,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-import Link from 'next/link'
 import { clsx } from 'clsx'
 import { usePathname } from 'next/navigation'
 
