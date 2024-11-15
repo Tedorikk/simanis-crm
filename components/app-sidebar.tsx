@@ -58,15 +58,15 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem 
                   key={item.title} 
-                  className={clsx("bg-transparent", {
-                    "bg-sky-200 rounded-md border-transparent": pathname === item.url,
+                  className={clsx("bg-primary text-primary-foreground hover:bg-slate-100", {
+                    "bg-slate-200 text-primary-foreground rounded-md border-transparent hover:bg-slate-200": pathname === item.url,
                   })}
                 >
                   <SidebarMenuButton asChild>
-                    <Link href={item.url}>
+                    <a href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </Link>
+                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
