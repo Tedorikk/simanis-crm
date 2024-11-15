@@ -49,7 +49,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent>
+      <SidebarContent className="">
         <SidebarGroup>
           <SidebarGroupLabel>Simanis - CRM</SidebarGroupLabel>
           <SidebarGroupContent>
