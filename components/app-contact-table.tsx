@@ -12,7 +12,7 @@ import {
 
 export default async function ContactTable() {
     const supabase = await createClient();
-    let { data: contacts, error } = await supabase
+    const { data: contacts, error } = await supabase
         .from('contact')
         .select('*')
         .range(0, 9)
