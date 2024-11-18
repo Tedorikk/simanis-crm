@@ -93,9 +93,9 @@ function ProfileForm() {
           <SelectValue placeholder="Jenis" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="light">Pelanggan</SelectItem>
-          <SelectItem value="dark">Internal</SelectItem>
-          <SelectItem value="system">Tempat Wisata</SelectItem>
+          <SelectItem value="pelanggan">Pelanggan</SelectItem>
+          <SelectItem value="internal">Internal</SelectItem>
+          <SelectItem value="eksternal">Eksternal</SelectItem>
         </SelectContent>
       </Select>
       <Button type="submit" onClick={() => {

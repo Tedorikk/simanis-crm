@@ -1,5 +1,6 @@
 import { ComboboxSortContact } from "@/components/app-combobox-sort-contact"
 import { DrawerDialogNewContact } from "@/components/drawer-dialog-addnew-contact"
+import ContactTable from "@/components/app-contact-table"
 
 export default function Page() {
     return (
@@ -13,7 +14,9 @@ export default function Page() {
                     <DrawerDialogNewContact />
                 </div>
             </section>
-            <section id="ContactTable"></section>
+            <section id="ContactTable">
+                <ContactTable />
+            </section>
         </div>
     )
 }
