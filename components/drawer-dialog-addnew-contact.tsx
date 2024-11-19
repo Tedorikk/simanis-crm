@@ -32,6 +32,11 @@ import { Input } from "@/components/ui/input"
 
 import { useToast } from "@/hooks/use-toast"
 
+import { createClient } from '@supabase/supabase-js'
+const supabaseUrl = 'https://yvoxbgkggvacwpdgryof.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2b3hiZ2tnZ3ZhY3dwZGdyeW9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE0NjgzNTQsImV4cCI6MjA0NzA0NDM1NH0.Lz7EkVYMUTfaCfmxAlXQMTIJy_jkATMe0exoQ8vUnew';
+const supabase = createClient(supabaseUrl, supabaseKey)
+
 export function DrawerDialogNewContact() {
   const [open, setOpen] = React.useState(false)
   const isDesktop = useMediaQuery("(min-width: 768px)")
@@ -82,13 +87,108 @@ export function DrawerDialogNewContact() {
 
 // Placeholder for ProfileForm component
 function ProfileForm() {
-  const { toast } = useToast()
+  const { toast } = useToast();
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [phone, setPhone] = React.useState('');
+  const [type, setType] = React.useState('');
+
+  const contactTypeMapping: { [key: string]: number } = {
+    pelanggan: 1,
+    internal: 2,
+    eksternal: 3,
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    console.log("Form submitted");
+    console.log("Form data before mapping:", { name, email, phone, type });
+  
+    // Map the selected type to its corresponding ID
+    const typeId = contactTypeMapping[type];
+    if (!typeId) {
+      console.error("Invalid contact type selected:", type);
+      toast({
+        title: "Gagal Menyimpan Kontak",
+        description: "Jenis kontak tidak valid.",
+      });
+      return;
+    }
+  
+    console.log("Form data after mapping:", { name, email, phone, type: typeId });
+  
+    try {
+      const { data, error } = await supabase
+        .from('contact')
+        .insert([
+          {
+            name,
+            email,
+            phone,
+            type: typeId, // Use the ID instead of the string
+          },
+        ])
+        .select();
+  
+      console.log("Supabase response:", data);
+  
+      if (error) {
+        console.error("Supabase error details:", error);
+        throw error;
+      }
+  
+      toast({
+        title: "Kontak Disimpan",
+        description: "Kontak berhasil ditambahkan.",
+      });
+  
+      // Clear the form fields
+      setName('');
+      setEmail('');
+      setPhone('');
+      setType('');
+      console.log("Form cleared");
+    } catch (error: unknown) {
+      console.error("Catch block error:", error);
+  
+      if (error instanceof Error) {
+        toast({
+          title: "Gagal Menyimpan Kontak",
+          description: error.message || "Terjadi kesalahan.",
+        });
+      } else {
+        toast({
+          title: "Gagal Menyimpan Kontak",
+          description: "Terjadi kesalahan yang tidak diketahui.",
+        });
+      }
+    }
+  };
+  
+  
+
   return (
-    <form className="flex flex-col gap-5">
-      <Input type="name" placeholder="Nama"/>
-      <Input type="email" placeholder="Email" />
-      <Input type="phone" placeholder="Telepon" />
-      <Select>
+    <form className="flex flex-col gap-5" onSubmit={handleSave}>
+      <Input 
+        type="text" 
+        placeholder="Nama" 
+        value={name} 
+        onChange={(e) => setName(e.target.value)} 
+      />
+      <Input 
+        type="email" 
+        placeholder="Email" 
+        value={email} 
+        onChange={(e) => setEmail(e.target.value)} 
+      />
+      <Input 
+        type="text" 
+        placeholder="Telepon" 
+        value={phone} 
+        onChange={(e) => setPhone(e.target.value)} 
+      />
+      <Select value={type} onValueChange={setType}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Jenis" />
         </SelectTrigger>
@@ -98,12 +198,7 @@ function ProfileForm() {
           <SelectItem value="eksternal">Eksternal</SelectItem>
         </SelectContent>
       </Select>
-      <Button type="submit" onClick={() => {
-        toast({
-          title: "Kontak Disimpan",
-          description: "Nama disimpan pada tanggal",
-        })
-      }}>Simpan</Button>
+      <Button type="submit">Simpan</Button>
     </form>
-  )
+  );
 }
