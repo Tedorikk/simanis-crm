@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/supabase";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from 'lucide-react';
@@ -33,6 +33,12 @@ export default function ContactTable({ initialContacts }: ContactTableProps) {
       }
     };
   
+      // Fetch contacts when the component mounts
+    useEffect(() => {
+        fetchContacts(); // Call fetchContacts when the component is mounted
+    }, []); // Empty dependency array ensures it runs once on mount
+
+
     const handleSortChange = (sortType: string) => {
       const sortedContacts = [...contacts]; // Copy contacts array to avoid mutating state directly
       switch (sortType) {
@@ -72,7 +78,7 @@ export default function ContactTable({ initialContacts }: ContactTableProps) {
                 <DrawerDialogNewContact onContactAdded={handleContactAdded} />
             </div>
         </div>
-        <ScrollArea className="w-80 md:w-full sm:w-80 whitespace-nowrap rounded-md border h-full">
+        <ScrollArea className="w-80 md:w-full sm:w-80 whitespace-nowrap rounded-md border max-h-full">
         <Table>
           <TableHeader>
             <TableRow>
