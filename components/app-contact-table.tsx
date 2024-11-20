@@ -1,53 +1,54 @@
-import { createClient } from '@/utils/supabase/server';
+import { supabase } from "@/utils/supabase/supabase";
 
 import {
     Table,
     TableBody,
     TableCaption,
     TableCell,
+    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table"
+  } from "@/components/ui/table"
 
 export default async function ContactTable() {
-    const supabase = await createClient();
-    const { data: contacts, error } = await supabase
+    const { data: contact, error } = await supabase
         .from('contact')
         .select('*')
-        .range(0, 9)
 
     if (error) {
-        return <div>Error: {error.message}</div>
+        console.error('Error fetching contact', error);
+    } else {
+        console.log('Contact data:', contact)
     }
 
-    return (
-        <div>
-            <Table>
-                <TableCaption>List of Contacts</TableCaption>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Address</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Created At</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {contacts && contacts.map((contact) => (
-                        <TableRow key={contact.id}>
-                            <TableCell className="font-medium">{contact.name}</TableCell>
-                            <TableCell>{contact.email}</TableCell>
-                            <TableCell>{contact.phone}</TableCell>
-                            <TableCell>{contact.address}</TableCell>
-                            <TableCell>{contact.type}</TableCell>
-                            <TableCell>{new Date(contact.created_at).toLocaleDateString()}</TableCell>
+    return <div>
+        <Table>
+            <TableCaption>
+                List Kontak
+            </TableCaption>
+            <TableHeader>
+                <TableRow>
+                    <TableHead className="w-[100px]">id</TableHead>
+                    <TableHead>Nama</TableHead>
+                    <TableHead>email</TableHead>
+                    <TableHead>Telepon</TableHead>
+                    <TableHead>Tipe</TableHead>
+                    <TableHead></TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                    {contact?.map((item) => (
+                        <TableRow key={item.id}>
+                        <TableCell>{item.id}</TableCell>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell>{item.email}</TableCell>
+                        <TableCell>{item.phone}</TableCell>
+                        <TableCell>{item.type}</TableCell>
                         </TableRow>
                     ))}
-                </TableBody>
-            </Table>
+            </TableBody>
+            <TableFooter></TableFooter>
+        </Table>
         </div>
-    )
 }
