@@ -1,3 +1,3 @@
-export default function AddNew() {
-  
+export default function DrawerDialogNewContact() {
+  return <div></div>
 }
