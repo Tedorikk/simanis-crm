@@ -1,15 +1,11 @@
 "use client";
 
-import * as React from "react"
-
-import { supabase } from "@/utils/supabase/supabase"
-
-import { useState } from "react"
-import { Label } from "@/components/ui/label"
-import { toast } from "@/hooks/use-toast"
-
-import { useMediaQuery } from "@/hooks/use-media-query"
-import { Button } from "@/components/ui/button"
+import React, { useState } from "react";
+import { supabase } from "@/utils/supabase/supabase";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerClose,
@@ -27,22 +23,78 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
-import { Input } from "@/components/ui/input"
-
+} from "@/components/ui/drawer";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
-export default function DrawerDialogNewContact() {
-  const [open, setOpen] = React.useState(false)
-  const isDesktop = useMediaQuery("(min-width: 768px)")
+interface DrawerDialogNewContactProps {
+  onContactAdded: () => void;
+}
 
-    if (isDesktop) {
+export default function DrawerDialogNewContact({
+  onContactAdded,
+}: DrawerDialogNewContactProps) {
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    type: "",
+  });
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSelectChange = (value: string) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      type: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const {error } = await supabase.from("contacts").insert([formData]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Contact added successfully",
+        description: "The new contact has been added to the database.",
+      });
+
+      // Reset form after successful submission
+      setFormData({ name: "", email: "", phone: "", type: "" });
+
+      // Call the function to fetch contacts again
+      onContactAdded();
+
+      // Close the drawer or dialog
+      setOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "There was an error adding the contact. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error inserting contact:", error);
+    }
+  };
+
+  if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
@@ -55,12 +107,17 @@ export default function DrawerDialogNewContact() {
               Masukkan informasi kontak
             </DialogDescription>
           </DialogHeader>
-          <ProfileForm />
+          <ProfileForm
+            onSubmit={handleSubmit}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleSelectChange={handleSelectChange}
+          />
         </DialogContent>
       </Dialog>
-    )
+    );
   }
- 
+
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
@@ -69,11 +126,15 @@ export default function DrawerDialogNewContact() {
       <DrawerContent>
         <DrawerHeader className="text-left">
           <DrawerTitle>Tambah Kontak</DrawerTitle>
-          <DrawerDescription>
-            Masukkan Informasi Kontak
-          </DrawerDescription>
+          <DrawerDescription>Masukkan Informasi Kontak</DrawerDescription>
         </DrawerHeader>
-        <ProfileForm className="px-4" />
+        <ProfileForm
+          onSubmit={handleSubmit}
+          formData={formData}
+          handleInputChange={handleInputChange}
+          handleSelectChange={handleSelectChange}
+          className="px-4"
+        />
         <DrawerFooter className="pt-2">
           <DrawerClose asChild>
             <Button variant="outline">Batalkan</Button>
@@ -81,61 +142,31 @@ export default function DrawerDialogNewContact() {
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
-  )
+  );
 }
- 
-function ProfileForm({ className }: React.ComponentProps<"form">) {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    type: "",
-  });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
+interface ProfileFormProps {
+  formData: {
+    name: string;
+    email: string;
+    phone: string;
+    type: string;
   };
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSelectChange: (value: string) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  className?: string;
+}
 
-  const handleSelectChange = (value: string) => {
-    setFormData(prevData => ({
-      ...prevData,
-      type: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      const {error } = await supabase
-        .from('contacts')
-        .insert([formData])
-        .select();
-
-      if (error) throw error;
-
-      toast({
-        title: "Contact added successfully",
-        description: "The new contact has been added to the database.",
-      });
-
-      // Reset form after successful submission
-      setFormData({ name: "", email: "", phone: "", type: "" });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "There was an error adding the contact. Please try again.",
-        variant: "destructive",
-      });
-      console.error("Error inserting contact:", error);
-    }
-  };
-
+function ProfileForm({
+  formData,
+  handleInputChange,
+  handleSelectChange,
+  onSubmit,
+  className,
+}: ProfileFormProps) {
   return (
-    <form onSubmit={handleSubmit} className={className}>
+    <form onSubmit={onSubmit} className={className}>
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="name" className="text-right">
@@ -179,7 +210,11 @@ function ProfileForm({ className }: React.ComponentProps<"form">) {
           <Label htmlFor="type" className="text-right">
             Type
           </Label>
-          <Select onValueChange={handleSelectChange} value={formData.type} name="type">
+          <Select
+            onValueChange={handleSelectChange}
+            value={formData.type}
+            name="type"
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
