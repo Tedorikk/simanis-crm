@@ -1,7 +1,6 @@
 "use client";
 
-import { Home, Map, MapPin, Contact, ChartCandlestick } from "lucide-react"
-
+import { Home, Map, MapPin, Contact, ChartCandlestick } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,12 +10,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import { clsx } from 'clsx';
+import { usePathname } from 'next/navigation';
 
-import { clsx } from 'clsx'
-import { usePathname } from 'next/navigation'
-
-// Menu items.
 const items = [
   {
     title: "Dashboard",
@@ -43,20 +40,21 @@ const items = [
     url: "/dashboard/marketing",
     icon: ChartCandlestick,
   },
-]
+];
 
 export function AppSidebar() {
   const pathname = usePathname();
+
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent className="">
+      <SidebarContent className="h-full overflow-auto relative"> {/* Added relative positioning and overflow-auto */}
         <SidebarGroup>
           <SidebarGroupLabel>Simanis - CRM</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem 
-                  key={item.title} 
+                <SidebarMenuItem
+                  key={item.title}
                   className={clsx("bg-primary text-primary-foreground hover:bg-slate-100", {
                     "bg-slate-200 text-primary-foreground rounded-md border-transparent hover:bg-slate-200": pathname === item.url,
                   })}
