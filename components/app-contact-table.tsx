@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components
 import DrawerDialogNewContact from "@/components/drawer-dialog-addnew-contact";
 import { ComboboxSortContact } from "@/components/app-combobox-sort-contact";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import EditContactDialog from "@/components/edit-contact-dialog";
+import DeleteContactDialog from "@/components/delete-contact-dialog";
 interface ContactTableProps {
   initialContacts: Array<{
     id: string;
@@ -78,6 +80,7 @@ export default function ContactTable({ initialContacts }: ContactTableProps) {
               <TableCell>Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Phone</TableCell>
+              <TableCell>Action</TableCell>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -87,6 +90,12 @@ export default function ContactTable({ initialContacts }: ContactTableProps) {
                 <TableCell>{contact.name}</TableCell>
                 <TableCell>{contact.email}</TableCell>
                 <TableCell>{contact.phone}</TableCell>
+                <TableCell>
+                    <div className="flex gap-2">
+                        <EditContactDialog contactId={contact.id} onContactUpdated={fetchContacts} />
+                        <DeleteContactDialog contactId={contact.id} onContactDeleted={fetchContacts} />
+                    </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
