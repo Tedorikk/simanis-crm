@@ -1,5 +1,6 @@
 import { ComboboxSortContact } from "@/components/app-combobox-sort-contact"
 import ContactTable from "@/components/app-contact-table"
+import DrawerDialogNewContact from "@/components/drawer-dialog-addnew-contact"
 
 export default function Page() {
     return (
@@ -10,6 +11,7 @@ export default function Page() {
                 </h1>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
                     <ComboboxSortContact />
+                    <DrawerDialogNewContact />
                 </div>
             </section>
             <section id="ContactTable">
