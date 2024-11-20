@@ -83,10 +83,10 @@ export default function ContactTable({ initialContacts }: ContactTableProps) {
           <TableHeader>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>Name</TableCell>
+              <TableCell>Nama</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Action</TableCell>
+              <TableCell>Telepon</TableCell>
+              <TableCell></TableCell>
             </TableRow>
           </TableHeader>
           <TableBody>
