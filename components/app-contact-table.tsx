@@ -7,6 +7,7 @@ import { RefreshCcw } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import DrawerDialogNewContact from "@/components/drawer-dialog-addnew-contact";
 import { ComboboxSortContact } from "@/components/app-combobox-sort-contact";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 interface ContactTableProps {
   initialContacts: Array<{
     id: string;
@@ -18,57 +19,81 @@ interface ContactTableProps {
 }
 
 export default function ContactTable({ initialContacts }: ContactTableProps) {
-  const [contacts, setContacts] = useState(initialContacts);
-
-  const fetchContacts = async () => {
-    try {
-      const { data, error } = await supabase.from("contacts").select("*");
-      if (error) throw error;
-      setContacts(data || []);
-    } catch (error) {
-      console.error("Error fetching contacts:", error);
-    }
-  };
-
-  const handleContactAdded = () => {
-    fetchContacts();  // Re-fetch contacts after adding a new one
-  };
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-4 pt-5">
-        <h2 className="text-lg font-bold">Total: {contacts.length}</h2>
-        
-        <div className="flex justify-between items-center mb-4 gap-10">
-            <Button onClick={fetchContacts} size="icon" variant={"outline"}>
-            <RefreshCcw />
-            </Button>
-            <ComboboxSortContact />
-            <DrawerDialogNewContact onContactAdded={handleContactAdded} />
-            
+    const [contacts, setContacts] = useState(initialContacts);
+  
+    const fetchContacts = async () => {
+      try {
+        const { data, error } = await supabase.from("contacts").select("*");
+        if (error) throw error;
+        setContacts(data || []);
+      } catch (error) {
+        console.error("Error fetching contacts:", error);
+      }
+    };
+  
+    const handleSortChange = (sortType: string) => {
+      const sortedContacts = [...contacts]; // Copy contacts array to avoid mutating state directly
+      switch (sortType) {
+        case "sort-by-newest":
+          sortedContacts.sort((a, b) => (a.id < b.id ? 1 : -1));
+          break;
+        case "sort-by-oldest":
+          sortedContacts.sort((a, b) => (a.id > b.id ? 1 : -1));
+          break;
+        case "sort-by-name-ascending":
+          sortedContacts.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+        case "sort-by-name-descending":
+          sortedContacts.sort((a, b) => b.name.localeCompare(a.name));
+          break;
+        default:
+          return;
+      }
+      setContacts(sortedContacts);
+    };
+  
+    const handleContactAdded = () => {
+      fetchContacts(); // Re-fetch contacts after adding a new one
+    };
+  
+    return (
+      <div>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center justify-between mb-4 pt-5">
+            <h2 className="text-lg font-bold text-center md:text-left">
+                Total: {contacts.length}
+            </h2>
+            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:justify-center md:justify-end md:gap-6">
+                <Button onClick={fetchContacts} size="icon" variant={"outline"}>
+                <RefreshCcw />
+                </Button>
+                <ComboboxSortContact onSortChange={handleSortChange} />
+                <DrawerDialogNewContact onContactAdded={handleContactAdded} />
+            </div>
         </div>
-      </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Phone</TableCell>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {contacts.map((contact) => (
-            <TableRow key={contact.id}>
-              <TableCell>{contact.id}</TableCell>
-              <TableCell>{contact.name}</TableCell>
-              <TableCell>{contact.email}</TableCell>
-              <TableCell>{contact.phone}</TableCell>
+        <ScrollArea className="w-80 md:w-full sm:w-80 whitespace-nowrap rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Phone</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      
-    </div>
-  );
-}
+          </TableHeader>
+          <TableBody>
+            {contacts.map((contact) => (
+              <TableRow key={contact.id}>
+                <TableCell>{contact.id}</TableCell>
+                <TableCell>{contact.name}</TableCell>
+                <TableCell>{contact.email}</TableCell>
+                <TableCell>{contact.phone}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </div>
+    );
+  }
+  

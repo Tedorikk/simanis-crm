@@ -37,9 +37,13 @@ const sortingtype = [
   },
 ]
 
-export function ComboboxSortContact() {
-  const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState("")
+export function ComboboxSortContact({
+  onSortChange,
+}: {
+  onSortChange: (sortType: string) => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [value, setValue] = React.useState("");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -66,8 +70,10 @@ export function ComboboxSortContact() {
                   key={sortingtype.value}
                   value={sortingtype.value}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue)
-                    setOpen(false)
+                    const newValue = currentValue === value ? "" : currentValue;
+                    setValue(newValue);
+                    onSortChange(newValue); // Notify parent about sorting change
+                    setOpen(false);
                   }}
                 >
                   {sortingtype.label}
@@ -84,5 +90,5 @@ export function ComboboxSortContact() {
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
