@@ -70,7 +70,7 @@ export default function ContactTable({ initialContacts }: ContactTableProps) {
                 <DrawerDialogNewContact onContactAdded={handleContactAdded} />
             </div>
         </div>
-        <ScrollArea className="w-80 md:w-full sm:w-80 whitespace-nowrap rounded-md border">
+        <ScrollArea className="w-80 md:w-full sm:w-80 whitespace-nowrap rounded-md border h-full">
         <Table>
           <TableHeader>
             <TableRow>
