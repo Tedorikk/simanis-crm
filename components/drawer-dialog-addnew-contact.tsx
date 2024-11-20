@@ -31,12 +31,7 @@ import {
 import { Input } from "@/components/ui/input"
 
 import { useToast } from "@/hooks/use-toast"
-
-import { createClient } from '@supabase/supabase-js'
-const supabaseUrl = 'https://yvoxbgkggvacwpdgryof.supabase.co'
-const supabaseKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2b3hiZ2tnZ3ZhY3dwZGdyeW9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE0NjgzNTQsImV4cCI6MjA0NzA0NDM1NH0.Lz7EkVYMUTfaCfmxAlXQMTIJy_jkATMe0exoQ8vUnew';
-const supabase = createClient(supabaseUrl, supabaseKey)
-
+import { supabase } from "@/utils/supabase/supabase";
 export function DrawerDialogNewContact() {
   const [open, setOpen] = React.useState(false)
   const isDesktop = useMediaQuery("(min-width: 768px)")
@@ -156,7 +151,7 @@ function ProfileForm() {
         toast({
           title: "Gagal Menyimpan Kontak",
           description: error.message || "Terjadi kesalahan.",
-        });x
+        });
       } else {
         toast({
           title: "Gagal Menyimpan Kontak",
