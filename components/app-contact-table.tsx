@@ -12,14 +12,15 @@ import {
   } from "@/components/ui/table"
 
 export default async function ContactTable() {
-    const { data: contact, error } = await supabase
-        .from('contact')
-        .select('*')
+    const { data: items, error } = await supabase
+    .from('contacts')
+    .select('*')
+            
 
     if (error) {
         console.error('Error fetching contact', error);
     } else {
-        console.log('Contact data:', contact)
+        console.log('Contact data:', items);
     }
 
     return <div>
@@ -38,13 +39,13 @@ export default async function ContactTable() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                    {contact?.map((item) => (
-                        <TableRow key={item.id}>
-                        <TableCell>{item.id}</TableCell>
-                        <TableCell>{item.name}</TableCell>
-                        <TableCell>{item.email}</TableCell>
-                        <TableCell>{item.phone}</TableCell>
-                        <TableCell>{item.type}</TableCell>
+                    {items?.map((item) => (
+                        <TableRow key={item.item}>
+                            <TableCell>{item.id}</TableCell>
+                            <TableCell>{item.name}</TableCell>
+                            <TableCell>{item.email}</TableCell>
+                            <TableCell>{item.phone}</TableCell>
+                            <TableCell>{item.type}</TableCell>
                         </TableRow>
                     ))}
             </TableBody>
