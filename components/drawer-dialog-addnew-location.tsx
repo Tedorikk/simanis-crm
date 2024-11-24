@@ -25,6 +25,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -33,28 +34,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Define a type for the contact objects
 interface Contact {
   id: string;
   name: string;
 }
 
-interface DrawerDialogNewContactProps {
-  onContactAdded: () => void;
+interface DrawerDialogNewLocationProps {
+  onLocationAdded: () => void;
 }
 
-export default function DrawerDialogNewContact({
-  onContactAdded,
-}: DrawerDialogNewContactProps) {
+export default function DrawerDialogNewLocation({
+  onLocationAdded,
+}: DrawerDialogNewLocationProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
-    phone: "",
-    type: "",
+    description: "",
+    address: "",
+    contact: "",
   });
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [selectedContact, setSelectedContact] = useState(""); // Added state for selected contact
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   useEffect(() => {
@@ -63,15 +62,16 @@ export default function DrawerDialogNewContact({
       if (error) {
         console.error("Error fetching contacts:", error);
       } else {
-        console.log("Fetched contacts:", data); // Debugging fetched data
-        setContacts(data as Contact[]); // Ensure type safety
+        setContacts(data as Contact[]);
       }
     };
 
     fetchContacts();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -79,42 +79,40 @@ export default function DrawerDialogNewContact({
     }));
   };
 
-  const handleSelectChange = (value: string) => {
+  const handleContactSelectChange = (contactId: string) => {
     setFormData((prevData) => ({
       ...prevData,
-      type: value,
+      contact: contactId,
     }));
-  };
-
-  const handleContactSelectChange = (contactId: string) => {
-    setSelectedContact(contactId); // Update the selected contact
-    console.log("Selected contact ID:", contactId);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const { error } = await supabase.from("contacts").insert([formData]);
+      const { error } = await supabase.from("tourist_location").insert([formData]);
 
       if (error) throw error;
 
       toast({
-        title: "Contact added successfully",
-        description: "The new contact has been added to the database.",
+        title: "Location added successfully",
+        description: "The new location has been added to the database.",
       });
 
-      setFormData({ name: "", email: "", phone: "", type: "" });
-      setSelectedContact(""); // Reset selected contact
+      // Reset form after successful submission
+      setFormData({ name: "", description: "", address: "", contact: "" });
 
-      onContactAdded(); // Refresh contact list
+      // Call the function to fetch locations again
+      onLocationAdded();
+
+      // Close the drawer or dialog
       setOpen(false);
     } catch (error) {
       toast({
         title: "Error",
-        description: "There was an error adding the contact. Please try again.",
+        description: "There was an error adding the location. Please try again.",
         variant: "destructive",
       });
-      console.error("Error inserting contact:", error);
+      console.error("Error inserting location:", error);
     }
   };
 
@@ -122,22 +120,20 @@ export default function DrawerDialogNewContact({
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button>Tambah Kontak</Button>
+          <Button>Tambah Lokasi</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Tambah Kontak</DialogTitle>
+            <DialogTitle>Tambah Lokasi</DialogTitle>
             <DialogDescription>
-              Masukkan informasi kontak
+              Masukkan informasi lokasi wisata
             </DialogDescription>
           </DialogHeader>
-          <ProfileForm
+          <LocationForm
             onSubmit={handleSubmit}
             formData={formData}
             handleInputChange={handleInputChange}
-            handleSelectChange={handleSelectChange}
             contacts={contacts}
-            selectedContact={selectedContact}
             handleContactSelectChange={handleContactSelectChange}
           />
         </DialogContent>
@@ -148,20 +144,18 @@ export default function DrawerDialogNewContact({
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button>Tambah Kontak</Button>
+        <Button>Tambah Lokasi</Button>
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle>Tambah Kontak</DrawerTitle>
-          <DrawerDescription>Masukkan Informasi Kontak</DrawerDescription>
+          <DrawerTitle>Tambah Lokasi</DrawerTitle>
+          <DrawerDescription>Masukkan Informasi Lokasi Wisata</DrawerDescription>
         </DrawerHeader>
-        <ProfileForm
+        <LocationForm
           onSubmit={handleSubmit}
           formData={formData}
           handleInputChange={handleInputChange}
-          handleSelectChange={handleSelectChange}
           contacts={contacts}
-          selectedContact={selectedContact}
           handleContactSelectChange={handleContactSelectChange}
           className="px-4"
         />
@@ -175,31 +169,28 @@ export default function DrawerDialogNewContact({
   );
 }
 
-interface ProfileFormProps {
+interface LocationFormProps {
   formData: {
     name: string;
-    email: string;
-    phone: string;
-    type: string;
+    description: string;
+    address: string;
+    contact: string;
   };
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSelectChange: (value: string) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleContactSelectChange: (contactId: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   contacts: Contact[];
-  selectedContact: string; // Added selectedContact prop
   className?: string;
 }
 
-function ProfileForm({
+function LocationForm({
   formData,
   handleInputChange,
   handleContactSelectChange,
   onSubmit,
   contacts,
-  selectedContact,
   className,
-}: ProfileFormProps) {
+}: LocationFormProps) {
   return (
     <form onSubmit={onSubmit} className={className}>
       <div className="grid gap-4 py-4">
@@ -216,27 +207,25 @@ function ProfileForm({
           />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="email" className="text-right">
-            Email
+          <Label htmlFor="description" className="text-right">
+            Description
           </Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
+          <Textarea
+            id="description"
+            name="description"
+            value={formData.description}
             onChange={handleInputChange}
             className="col-span-3"
           />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="phone" className="text-right">
-            Phone
+          <Label htmlFor="address" className="text-right">
+            Address
           </Label>
           <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            value={formData.phone}
+            id="address"
+            name="address"
+            value={formData.address}
             onChange={handleInputChange}
             className="col-span-3"
           />
@@ -247,8 +236,8 @@ function ProfileForm({
           </Label>
           <Select
             onValueChange={handleContactSelectChange}
-            value={selectedContact}
             name="contact"
+            value={formData.contact}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select Contact" />
@@ -264,7 +253,7 @@ function ProfileForm({
         </div>
       </div>
       <Button type="submit" className="w-full">
-        Add Contact
+        Add Location
       </Button>
     </form>
   );
