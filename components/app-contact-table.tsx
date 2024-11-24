@@ -100,11 +100,11 @@ export default function ContactTable({ initialContacts }: ContactTableProps) {
                     console.log("Tipe data contact.type:", typeof contact.type);
                     console.log("Nilai contact.type:", contact.type);
 
-                    return contact.type === 1
+                    return contact.type == "1"
                         ? "Pelanggan"
-                        : contact.type === 2
+                        : contact.type == "2"
                         ? "Internal"
-                        : contact.type === 3
+                        : contact.type == "3"
                         ? "External"
                         : "Tipe tidak dikenali";
                 })()
