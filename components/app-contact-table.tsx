@@ -82,20 +82,34 @@ export default function ContactTable({ initialContacts }: ContactTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableCell>ID</TableCell>
               <TableCell>Nama</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Telepon</TableCell>
+              <TableCell>Kategori</TableCell>
               <TableCell></TableCell>
             </TableRow>
           </TableHeader>
           <TableBody>
             {contacts.map((contact) => (
               <TableRow key={contact.id}>
-                <TableCell>{contact.id}</TableCell>
                 <TableCell>{contact.name}</TableCell>
                 <TableCell>{contact.email}</TableCell>
                 <TableCell>{contact.phone}</TableCell>
+                <TableCell>                {
+                (() => {
+                    console.log("Tipe data contact.type:", typeof contact.type);
+                    console.log("Nilai contact.type:", contact.type);
+
+                    return contact.type === 1
+                        ? "Pelanggan"
+                        : contact.type === 2
+                        ? "Internal"
+                        : contact.type === 3
+                        ? "External"
+                        : "Tipe tidak dikenali";
+                })()
+            }
+     </TableCell>
                 <TableCell>
                     <div className="flex gap-2">
                         <EditContactDialog contactId={contact.id} onContactUpdated={fetchContacts} />

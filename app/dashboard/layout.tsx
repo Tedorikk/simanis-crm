@@ -58,7 +58,7 @@ export default function DashboardLayout({
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex-1 overflow-auto pt-0 md:pt-5 sm:pt-0">
+        <main className="flex-1 overflow-auto pt-10">
           {children}
         </main>
       </SidebarInset>
