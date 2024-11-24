@@ -105,7 +105,7 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
                 <TableCell>{location.description}</TableCell>
                 <TableCell>{location.address}</TableCell>
                 <TableCell>
-                {location.contacts ? `${location.contacts.email}` : "No contact"}
+                    {location.contacts ? `${location.contacts[0]?.email || "No contact"}` : "No contact"}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
