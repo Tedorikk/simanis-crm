@@ -28,7 +28,11 @@ interface LocationTableProps {
 export default function LocationTable({ initialLocations }: LocationTableProps) {
   const [locations, setLocations] = useState<Location[]>(initialLocations);
 
-  // Fetch locations from Supabase
+  // Update state when initialLocations prop changes
+  useEffect(() => {
+    setLocations(initialLocations);
+  }, [initialLocations]);
+
   const fetchLocations = async () => {
     try {
       const { data, error } = await supabase
@@ -40,40 +44,22 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
           address,
           contacts!tourist_location_contact_fkey(id, email)
         `);
-  
+
       if (error) throw error;
-  
-      console.log("Raw Supabase data:", data); // Debug log raw data
-  
-      // Map the data to match our Location interface
-      const mappedData: Location[] = (data || []).map((item) => {
-        console.log("Item contacts:", item.contacts); // Log contacts for debugging
-        return {
-          id: item.id,
-          name: item.name,
-          description: item.description,
-          address: item.address,
-          contacts: Array.isArray(item.contacts) ? item.contacts : [], // Ensure contacts is an array
-        };
-      }); 
-  
-      console.log("Mapped data:", mappedData); // Debug log mapped data
+
+      const mappedData: Location[] = (data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        address: item.address,
+        contacts: item.contacts || [], // Default to an empty array if undefined
+      }));
+
       setLocations(mappedData);
-  
+
     } catch (error) {
       console.error("Error fetching locations:", error);
     }
-  };
-  
-
-  // Fetch locations on component mount
-  useEffect(() => {
-    fetchLocations();
-  }, []);
-
-  // Handle adding a new location
-  const handleLocationAdded = () => {
-    fetchLocations(); // Re-fetch locations after adding a new one
   };
 
   return (
@@ -83,14 +69,13 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
           Total: {locations.length}
         </h2>
         <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:justify-center md:justify-end md:gap-6">
-          <Button onClick={fetchLocations} size="icon" variant={"outline"}>
+          <Button onClick={fetchLocations} size="icon" variant="outline">
             <RefreshCcw />
           </Button>
-          {/* Add ComboboxSortLocation component here */}
-          <DrawerDialogNewLocation onLocationAdded={handleLocationAdded} />
+          <DrawerDialogNewLocation onLocationAdded={fetchLocations} />
         </div>
       </div>
-      <ScrollArea className="w-80 md:w-full sm:w-80 whitespace-nowrap rounded-md border max-h-full">
+      <ScrollArea className="w-full rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -108,12 +93,11 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
                 <TableCell>{location.description}</TableCell>
                 <TableCell>{location.address}</TableCell>
                 <TableCell>
-                  {location.contacts ? '${location.contacts.email}' : "No Contact"}
+                  {location.contacts?.email || "No contact"}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    {/* Add EditLocationDialog component here */}
-                    {/* Add DeleteLocationDialog component here */}
+                    {/* Action buttons */}
                   </div>
                 </TableCell>
               </TableRow>

@@ -40,7 +40,7 @@ interface Contact {
 }
 
 interface DrawerDialogNewLocationProps {
-  onLocationAdded: () => void;
+  onLocationAdded: () => void; // Callback for refetching data
 }
 
 export default function DrawerDialogNewLocation({
@@ -56,19 +56,30 @@ export default function DrawerDialogNewLocation({
   const [contacts, setContacts] = useState<Contact[]>([]);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
+  // Fetch contacts on component mount
   useEffect(() => {
     const fetchContacts = async () => {
-      const { data, error } = await supabase.from("contacts").select("id, name");
-      if (error) {
+      try {
+        const { data, error } = await supabase
+          .from("contacts")
+          .select("id, name");
+
+        if (error) throw error;
+        setContacts(data || []);
+      } catch (error) {
         console.error("Error fetching contacts:", error);
-      } else {
-        setContacts(data as Contact[]);
+        toast({
+          title: "Error",
+          description: "Failed to load contacts. Please try again later.",
+          variant: "destructive",
+        });
       }
     };
 
     fetchContacts();
   }, []);
 
+  // Handle input changes for text and textarea fields
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -79,42 +90,75 @@ export default function DrawerDialogNewLocation({
     }));
   };
 
+  // Handle contact selection change
   const handleContactSelectChange = (contactId: string) => {
+    console.log("Selected Contact ID:", contactId); // Debug log
+    console.log("Contacts List:", contacts);
     setFormData((prevData) => ({
       ...prevData,
       contact: contactId,
     }));
   };
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validate form data
+    if (!formData.name || !formData.address || !formData.contact) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill out all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      const { error } = await supabase.from("tourist_location").insert([formData]);
+      const { error } = await supabase.from("tourist_location").insert([
+        {
+          name: formData.name,
+          description: formData.description,
+          address: formData.address,
+          contact_id: formData.contact, // Ensure proper column name here
+        },
+      ]);
 
       if (error) throw error;
 
       toast({
-        title: "Location added successfully",
+        title: "Success",
         description: "The new location has been added to the database.",
       });
 
-      // Reset form after successful submission
+      // Reset form
       setFormData({ name: "", description: "", address: "", contact: "" });
 
-      // Call the function to fetch locations again
+      // Trigger refetch callback
       onLocationAdded();
 
-      // Close the drawer or dialog
+      // Close dialog/drawer
       setOpen(false);
     } catch (error) {
       toast({
         title: "Error",
-        description: "There was an error adding the location. Please try again.",
+        description: "Failed to add the location. Please try again.",
         variant: "destructive",
       });
       console.error("Error inserting location:", error);
     }
   };
+
+  const FormComponent = (
+    <LocationForm
+      onSubmit={handleSubmit}
+      formData={formData}
+      handleInputChange={handleInputChange}
+      contacts={contacts}
+      handleContactSelectChange={handleContactSelectChange}
+      className="px-4"
+    />
+  );
 
   if (isDesktop) {
     return (
@@ -125,17 +169,9 @@ export default function DrawerDialogNewLocation({
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Tambah Lokasi</DialogTitle>
-            <DialogDescription>
-              Masukkan informasi lokasi wisata
-            </DialogDescription>
+            <DialogDescription>Masukkan informasi lokasi wisata</DialogDescription>
           </DialogHeader>
-          <LocationForm
-            onSubmit={handleSubmit}
-            formData={formData}
-            handleInputChange={handleInputChange}
-            contacts={contacts}
-            handleContactSelectChange={handleContactSelectChange}
-          />
+          {FormComponent}
         </DialogContent>
       </Dialog>
     );
@@ -147,19 +183,12 @@ export default function DrawerDialogNewLocation({
         <Button>Tambah Lokasi</Button>
       </DrawerTrigger>
       <DrawerContent>
-        <DrawerHeader className="text-left">
+        <DrawerHeader>
           <DrawerTitle>Tambah Lokasi</DrawerTitle>
-          <DrawerDescription>Masukkan Informasi Lokasi Wisata</DrawerDescription>
+          <DrawerDescription>Masukkan informasi lokasi wisata</DrawerDescription>
         </DrawerHeader>
-        <LocationForm
-          onSubmit={handleSubmit}
-          formData={formData}
-          handleInputChange={handleInputChange}
-          contacts={contacts}
-          handleContactSelectChange={handleContactSelectChange}
-          className="px-4"
-        />
-        <DrawerFooter className="pt-2">
+        {FormComponent}
+        <DrawerFooter>
           <DrawerClose asChild>
             <Button variant="outline">Batalkan</Button>
           </DrawerClose>
@@ -231,26 +260,28 @@ function LocationForm({
           />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="contact" className="text-right">
-            Contact
-          </Label>
-          <Select
-            onValueChange={handleContactSelectChange}
-            name="contact"
-            value={formData.contact}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select Contact" />
-            </SelectTrigger>
-            <SelectContent>
-              {contacts.map((contact) => (
-                <SelectItem key={contact.id} value={contact.id}>
-                  {contact.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <Label htmlFor="contact" className="text-right">
+          Contact
+        </Label>
+        <Select
+          onValueChange={(value) => handleContactSelectChange(value)}
+          value={formData.contact || undefined} // Bind the selected value
+        >
+          <SelectTrigger className="w-[180px]" id="contact">
+            <SelectValue>
+              {/* Dynamically find and display the name based on the selected ID */}
+              {contacts.find((contact) => contact.id == formData.contact)?.name || "Select Contact"}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {contacts.map((contact) => (
+              <SelectItem key={contact.id} value={String(contact.id)}>
+                {contact.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       </div>
       <Button type="submit" className="w-full">
         Add Location
