@@ -9,17 +9,17 @@ import { RefreshCcw } from "lucide-react";
 import DrawerDialogNewLocation from "./drawer-dialog-addnew-location";
 
 interface Contact {
-    id: number;
-    email: string;
-  }
-  
-  interface Location {
-    id: number;
-    name: string;
-    description: string;
-    address: string;
-    contacts: Contact[];
-  }
+  id: number;
+  email: string;
+}
+
+interface Location {
+  id: number;
+  name: string;
+  description: string;
+  address: string;
+  contacts: Contact[];
+}
 
 interface LocationTableProps {
   initialLocations: Location[];
@@ -43,18 +43,21 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
   
       if (error) throw error;
   
-      // Map the data to match our Location interface
-      const mappedData: Location[] = (data || []).map(item => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        address: item.address,
-        contacts: item.contacts.map(contact => ({
-          id: contact.id,
-          email: contact.email
-        }))
-      }));
+      console.log("Raw Supabase data:", data); // Debug log raw data
   
+      // Map the data to match our Location interface
+      const mappedData: Location[] = (data || []).map((item) => {
+        console.log("Item contacts:", item.contacts); // Log contacts for debugging
+        return {
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          address: item.address,
+          contacts: Array.isArray(item.contacts) ? item.contacts : [], // Ensure contacts is an array
+        };
+      }); 
+  
+      console.log("Mapped data:", mappedData); // Debug log mapped data
       setLocations(mappedData);
   
     } catch (error) {
@@ -105,7 +108,7 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
                 <TableCell>{location.description}</TableCell>
                 <TableCell>{location.address}</TableCell>
                 <TableCell>
-                    {location.contacts ? `${location.contacts[0]?.email || "No contact"}` : "No contact"}
+                  {location.contacts ? '${location.contacts.email}' : "No Contact"}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
