@@ -61,7 +61,7 @@ export default function ShowLocationContact({ contactId }: ShowLocationContactPr
 
   return (
     <div>
-      <Button onClick={handleToggle}>View Contact</Button>
+      <Button onClick={handleToggle} variant={"outline"}>View Contact</Button>
       {isSmallScreen ? (
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
           <DrawerContent>

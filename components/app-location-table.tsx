@@ -10,6 +10,7 @@ import DeleteLocationDialog from "./delete-location-dialog";
 import DrawerDialogEditLocation from "./edit-location-dialog";
 import DrawerDialogNewLocation from "./drawer-dialog-addnew-location";
 import ShowLocationContact from "./show-location-contact";
+import { ComboboxSortLocation } from "./app-combobox-sort-location";
 
 interface Location {
   id: string;
@@ -26,6 +27,7 @@ interface LocationTableProps {
 export default function LocationTable({ initialLocations }: LocationTableProps) {
   const [locations, setLocations] = useState<Location[]>(initialLocations);
 
+  // Fetch location data
   const fetchLocation = async () => {
     try {
       const { data: locationData, error: locationError } = await supabase
@@ -60,6 +62,28 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
     fetchLocation();
   }, []);
 
+  // Sort locations based on the selected sorting type
+  const handleSortChange = (sortType: string) => {
+    let sortedLocations;
+    switch (sortType) {
+      case "sort-by-newest":
+        sortedLocations = [...locations].sort((a, b) => new Date(b.id).getTime() - new Date(a.id).getTime());
+        break;
+      case "sort-by-oldest":
+        sortedLocations = [...locations].sort((a, b) => new Date(a.id).getTime() - new Date(b.id).getTime());
+        break;
+      case "sort-by-name-ascending":
+        sortedLocations = [...locations].sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "sort-by-name-descending":
+        sortedLocations = [...locations].sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      default:
+        sortedLocations = locations;
+    }
+    setLocations(sortedLocations);
+  };
+
   return (
     <div>
       <div className="flex flex-col gap-4 md:flex-row md:items-center justify-between mb-4 pt-5">
@@ -70,6 +94,7 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
           <Button onClick={fetchLocation} size="icon" variant={"outline"}>
             <RefreshCcw />
           </Button>
+          <ComboboxSortLocation onSortChange={handleSortChange} />
           <DrawerDialogNewLocation onLocationAdded={fetchLocation} />
         </div>
       </div>
