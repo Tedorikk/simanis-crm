@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/supabase";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
@@ -33,6 +33,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// Define a type for the contact objects
+interface Contact {
+  id: string;
+  name: string;
+}
+
 interface DrawerDialogNewContactProps {
   onContactAdded: () => void;
 }
@@ -47,7 +53,23 @@ export default function DrawerDialogNewContact({
     phone: "",
     type: "",
   });
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [selectedContact, setSelectedContact] = useState(""); // Added state for selected contact
   const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      const { data, error } = await supabase.from("contacts").select("id, name");
+      if (error) {
+        console.error("Error fetching contacts:", error);
+      } else {
+        console.log("Fetched contacts:", data); // Debugging fetched data
+        setContacts(data as Contact[]); // Ensure type safety
+      }
+    };
+
+    fetchContacts();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -64,10 +86,15 @@ export default function DrawerDialogNewContact({
     }));
   };
 
+  const handleContactSelectChange = (contactId: string) => {
+    setSelectedContact(contactId); // Update the selected contact
+    console.log("Selected contact ID:", contactId);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const {error } = await supabase.from("contacts").insert([formData]);
+      const { error } = await supabase.from("contacts").insert([formData]);
 
       if (error) throw error;
 
@@ -76,13 +103,10 @@ export default function DrawerDialogNewContact({
         description: "The new contact has been added to the database.",
       });
 
-      // Reset form after successful submission
       setFormData({ name: "", email: "", phone: "", type: "" });
+      setSelectedContact(""); // Reset selected contact
 
-      // Call the function to fetch contacts again
-      onContactAdded();
-
-      // Close the drawer or dialog
+      onContactAdded(); // Refresh contact list
       setOpen(false);
     } catch (error) {
       toast({
@@ -112,6 +136,9 @@ export default function DrawerDialogNewContact({
             formData={formData}
             handleInputChange={handleInputChange}
             handleSelectChange={handleSelectChange}
+            contacts={contacts}
+            selectedContact={selectedContact}
+            handleContactSelectChange={handleContactSelectChange}
           />
         </DialogContent>
       </Dialog>
@@ -133,6 +160,9 @@ export default function DrawerDialogNewContact({
           formData={formData}
           handleInputChange={handleInputChange}
           handleSelectChange={handleSelectChange}
+          contacts={contacts}
+          selectedContact={selectedContact}
+          handleContactSelectChange={handleContactSelectChange}
           className="px-4"
         />
         <DrawerFooter className="pt-2">
@@ -154,15 +184,20 @@ interface ProfileFormProps {
   };
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: (value: string) => void;
+  handleContactSelectChange: (contactId: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  contacts: Contact[];
+  selectedContact: string; // Added selectedContact prop
   className?: string;
 }
 
 function ProfileForm({
   formData,
   handleInputChange,
-  handleSelectChange,
+  handleContactSelectChange,
   onSubmit,
+  contacts,
+  selectedContact,
   className,
 }: ProfileFormProps) {
   return (
@@ -207,21 +242,23 @@ function ProfileForm({
           />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="type" className="text-right">
-            Type
+          <Label htmlFor="contact" className="text-right">
+            Contact
           </Label>
           <Select
-            onValueChange={handleSelectChange}
-            value={formData.type}
-            name="type"
+            onValueChange={handleContactSelectChange}
+            value={selectedContact}
+            name="contact"
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Type" />
+              <SelectValue placeholder="Select Contact" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1">Pelanggan</SelectItem>
-              <SelectItem value="2">Internal</SelectItem>
-              <SelectItem value="3">External</SelectItem>
+              {contacts.map((contact) => (
+                <SelectItem key={contact.id} value={contact.id}>
+                  {contact.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

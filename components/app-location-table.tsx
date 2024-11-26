@@ -53,6 +53,7 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
       }));
 
       setLocations(mappedData);
+
     } catch (error) {
       console.error("Error fetching locations:", error);
     }
@@ -83,6 +84,7 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
     }
     setLocations(sortedLocations);
   };
+
 
   return (
     <div>
