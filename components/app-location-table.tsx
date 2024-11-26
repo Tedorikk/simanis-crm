@@ -6,19 +6,17 @@ import { Button } from "@/components/ui/button";
 import { RefreshCcw } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-
-// Define the types for your location and contact
-interface Contact {
-  id: string;
-  email: string;
-}
+import DeleteLocationDialog from "./delete-location-dialog";
+import DrawerDialogEditLocation from "./edit-location-dialog";
+import DrawerDialogNewLocation from "./drawer-dialog-addnew-location";
+import ShowLocationContact from "./show-location-contact";
 
 interface Location {
   id: string;
   name: string;
   description: string;
   address: string;
-  contact: Contact | null; // contact is now a single object or null
+  contact: { id: string; email: string } | null | undefined; // Allowing undefined
 }
 
 interface LocationTableProps {
@@ -30,24 +28,31 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
 
   const fetchLocation = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: locationData, error: locationError } = await supabase
         .from("tourist_location")
-        .select('id, name, description, address, contacts!tourist_location_contact_fkey(id, email)') // Expecting contacts as a single object
-    
-      if (error) throw error;
+        .select("id, name, description, address");
 
-      // Ensure contacts is a single object or null
-      const mappedData: Location[] = (data || []).map((item) => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        address: item.address,
-        contact: item.contacts ? { id: item.contacts.id, email: item.contacts.email } : null // contacts is now a single object or null
+      if (locationError) throw locationError;
+
+      const { data: contactData, error: contactError } = await supabase
+        .from("contacts")
+        .select("id, email");
+
+      if (contactError) throw contactError;
+
+      const mappedData: Location[] = (locationData || []).map((location) => ({
+        id: location.id,
+        name: location.name,
+        description: location.description,
+        address: location.address,
+        contact: contactData
+          ? contactData.find((contact) => contact.id === location.id) || null  // Ensure null if no contact found
+          : null,
       }));
 
-      setLocations(mappedData); // Set the locations with the correct structure
+      setLocations(mappedData);
     } catch (error) {
-      console.error("Error fetching contacts:", error);
+      console.error("Error fetching locations:", error);
     }
   };
 
@@ -65,6 +70,7 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
           <Button onClick={fetchLocation} size="icon" variant={"outline"}>
             <RefreshCcw />
           </Button>
+          <DrawerDialogNewLocation onLocationAdded={fetchLocation} />
         </div>
       </div>
       <ScrollArea className="w-80 md:w-full sm:w-80 whitespace-nowrap rounded-md border max-h-full">
@@ -85,11 +91,16 @@ export default function LocationTable({ initialLocations }: LocationTableProps) 
                 <TableCell>{location.description}</TableCell>
                 <TableCell>{location.address}</TableCell>
                 <TableCell>
-                  {location.contact ? location.contact.email : "No contact"}
+                  {location.contact ? (
+                    <ShowLocationContact contactId={location.contact.id} />
+                  ) : (
+                    <span>No Contact</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    {/* Add other actions here */}
+                    <DrawerDialogEditLocation locationId={location.id} onLocationUpdate={fetchLocation} />
+                    <DeleteLocationDialog locationId={location.id} onLocationDeleted={fetchLocation} />
                   </div>
                 </TableCell>
               </TableRow>
