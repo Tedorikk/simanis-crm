@@ -95,7 +95,7 @@ export default function ContactTable({ initialContacts }: ContactTableProps) {
                 <TableCell>{contact.name}</TableCell>
                 <TableCell>{contact.email}</TableCell>
                 <TableCell>{contact.phone}</TableCell>
-                <TableCell>                {
+                <TableCell>{
                 (() => {
                     console.log("Tipe data contact.type:", typeof contact.type);
                     console.log("Nilai contact.type:", contact.type);

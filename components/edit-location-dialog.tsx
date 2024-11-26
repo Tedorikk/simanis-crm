@@ -15,10 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -34,99 +32,121 @@ import {
 import { Label } from "@/components/ui/label";
 import { Pencil } from "lucide-react";
 
-interface DrawerDialogEditContactProps {
-  contactId: string | number; // ID of the contact to edit
-  onContactUpdated: () => void; // Callback to refresh the contact list
+interface DrawerDialogEditLocationProps {
+  locationId: string; // ID of the location to edit
+  onLocationUpdate: () => void; // Callback to refresh the location list
 }
 
-export default function DrawerDialogEditContact({
-  contactId,
-  onContactUpdated,
-}: DrawerDialogEditContactProps) {
+interface Contact {
+  id: string;
+  email: string;
+}
+
+export default function DrawerDialogEditLocation({
+  locationId,
+  onLocationUpdate,
+}: DrawerDialogEditLocationProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
-    phone: "",
-    type: "",
+    description: "",
+    address: "",
+    contact_id: "",
   });
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   useEffect(() => {
     if (open) {
-      const fetchContact = async () => {
+      const fetchLocation = async () => {
         try {
           const { data, error } = await supabase
-            .from("contacts")
+            .from("tourist_location")
             .select("*")
-            .eq("id", contactId)
+            .eq("id", locationId)
             .single();
 
-          if (error) {
-            toast({
-              title: "Error",
-              description: "Failed to fetch contact details.",
-              variant: "destructive",
-            });
-            console.error("Error fetching contact:", error);
-            return;
-          }
+          if (error) throw error;
 
           setFormData({
             name: data.name || "",
-            email: data.email || "",
-            phone: data.phone || "",
-            type: data.type || "",
+            description: data.description || "",
+            address: data.address || "",
+            contact_id: data.contact_id || "",
           });
         } catch (error) {
-          console.error("Error fetching contact details:", error);
+          toast({
+            title: "Error",
+            description: "Failed to fetch location details.",
+            variant: "destructive",
+          });
+          console.error("Error fetching location details:", error);
         }
       };
 
-      fetchContact();
+      fetchLocation();
     }
-  }, [open, contactId]);
+  }, [open, locationId]);
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const { data, error } = await supabase.from("contacts").select("id, email");
+        if (error) throw error;
+
+        setContacts(data as Contact[]);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch contact options.",
+          variant: "destructive",
+        });
+        console.error("Error fetching contacts:", error);
+      }
+    };
+
+    fetchContacts();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSelectChange = (value: string) => {
-    setFormData((prevData) => ({ ...prevData, type: value }));
+    setFormData((prev) => ({ ...prev, contact_id: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!formData.name || !formData.address || !formData.contact_id) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
-        .from("contacts")
-        .update({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          type: formData.type,
-        })
-        .eq("id", contactId);
+        .from("tourist_location")
+        .update(formData)
+        .eq("id", locationId);
 
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to update contact.",
-          variant: "destructive",
-        });
-        console.error("Error updating contact:", error);
-        return;
-      }
+      if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Contact updated successfully.",
-      });
-      onContactUpdated();
+      toast({ title: "Success", description: "Location updated successfully." });
+      onLocationUpdate();
       setOpen(false);
     } catch (error) {
-      console.error("Error during update:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update location.",
+        variant: "destructive",
+      });
+      console.error("Error updating location:", error);
     }
   };
 
@@ -146,8 +166,8 @@ export default function DrawerDialogEditContact({
       </Trigger>
       <Content>
         <Header>
-          <Title>Edit Contact</Title>
-          <Description>Update the contact details below.</Description>
+          <Title>Edit Location</Title>
+          <Description>Update the location details below.</Description>
         </Header>
         <form onSubmit={handleSubmit} className="px-4">
           <div className="grid gap-4 py-4">
@@ -164,62 +184,54 @@ export default function DrawerDialogEditContact({
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">
-                Email
+              <Label htmlFor="description" className="text-right">
+                Description
               </Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
+                id="description"
+                name="description"
+                value={formData.description}
                 onChange={handleInputChange}
                 className="col-span-3"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phone" className="text-right">
-                Phone
+              <Label htmlFor="address" className="text-right">
+                Address
               </Label>
               <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={formData.phone}
+                id="address"
+                name="address"
+                value={formData.address}
                 onChange={handleInputChange}
                 className="col-span-3"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">
-                Type
+              <Label htmlFor="contactId" className="text-right">
+                Contact
               </Label>
-              <Select
-                onValueChange={handleSelectChange}
-                value={formData.type}
-                name="type"
-              >
+              <Select value={formData.contact_id} onValueChange={handleSelectChange}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select Type" />
+                  <SelectValue>
+                    {contacts.find((c) => String(c.id) === formData.contact_id)?.email ||
+                      "Select a Contact"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">Customer</SelectItem>
-                  <SelectItem value="2">Internal</SelectItem>
-                  <SelectItem value="3">External</SelectItem>
+                  {contacts.map((contact) => (
+                    <SelectItem key={contact.id} value={String(contact.id)}>
+                      {contact.email}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           <Button type="submit" className="w-full">
-            Update Contact
+            Save Changes
           </Button>
         </form>
-        {!isDesktop && (
-          <DrawerFooter className="pt-2">
-            <DrawerClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DrawerClose>
-          </DrawerFooter>
-        )}
       </Content>
     </Component>
   );
