@@ -57,6 +57,7 @@ export default function DrawerDialogAddNewPackage({
   });
   const [contacts, setContacts] = useState<Contact[]>([]);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const [status, setStatus] = useState("Active"); // Default status
 
   // Fetch guide contacts from the database
   useEffect(() => {
@@ -247,13 +248,16 @@ export default function DrawerDialogAddNewPackage({
               <Label htmlFor="status" className="text-right">
                 Status
               </Label>
-              <Input
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Inactive">Inactive</SelectItem>
+                  <SelectItem value="Finished">Finished</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <Button type="submit" className="w-full">

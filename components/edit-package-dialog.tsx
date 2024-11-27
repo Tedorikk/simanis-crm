@@ -31,6 +31,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Pencil } from "lucide-react";
 
 interface EditPackageDialogProps {
   packageId: number; // ID of the package to edit
@@ -166,7 +167,9 @@ export default function EditPackageDialog({
   return (
     <Component open={open} onOpenChange={setOpen}>
       <Trigger asChild>
-        <Button>Edit Tour Package</Button>
+        <Button>
+          <Pencil />
+        </Button>
       </Trigger>
       <Content>
         <Header>

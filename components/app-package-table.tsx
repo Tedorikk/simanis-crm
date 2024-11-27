@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/supabase";
@@ -8,6 +8,8 @@ import { RefreshCcw } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import DrawerDialogAddNewPackage from "./drawer-dialog-addnew-package";
 import EditPackageDialog from "./edit-package-dialog";
+import DeletePackageDialog from "./delete-package-dialog";
+import { AppComboboxSortPackage } from "./app-combobox-sort-package";
 
 // Tipe data asli dari tabel `tour_package`
 interface TourPackage {
@@ -35,6 +37,7 @@ interface PackageTableProps {
 
 export default function PackageTable({ initialPackage }: PackageTableProps) {
   const [packages, setPackages] = useState<EnrichedPackage[]>(initialPackage);
+  const [sortedPackages, setSortedPackages] = useState<EnrichedPackage[]>([]); // State to hold sorted packages
 
   // Fungsi untuk mengambil data dari Supabase
   const fetchPackages = async () => {
@@ -58,6 +61,7 @@ export default function PackageTable({ initialPackage }: PackageTableProps) {
       });
 
       setPackages(enrichedPackages);
+      setSortedPackages(enrichedPackages); // Set sorted packages initially
     } catch (error) {
       console.error("Error fetching packages:", error);
     }
@@ -70,14 +74,39 @@ export default function PackageTable({ initialPackage }: PackageTableProps) {
     }
   }, [initialPackage.length]);
 
+  const handleSortChange = (sortType: string) => {
+    let sortedData: EnrichedPackage[];
+
+    switch (sortType) {
+      case "sort-by-newest":
+        sortedData = [...packages].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        break;
+      case "sort-by-oldest":
+        sortedData = [...packages].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        break;
+      case "sort-by-name-ascending":
+        sortedData = [...packages].sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "sort-by-name-descending":
+        sortedData = [...packages].sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      default:
+        sortedData = [...packages];
+        break;
+    }
+
+    setSortedPackages(sortedData); // Update the sorted packages state
+  };
+
   return (
     <div>
       <div className="flex flex-col gap-4 md:flex-row md:items-center justify-between mb-4 pt-5">
-        <h2 className="text-lg font-bold text-center md:text-left">Total: {packages.length}</h2>
+        <h2 className="text-lg font-bold text-center md:text-left">Total: {sortedPackages.length}</h2>
           <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:justify-center md:justify-end md:gap-6">
           <Button onClick={fetchPackages} size="icon" variant={"outline"}>
             <RefreshCcw />
           </Button>
+          <AppComboboxSortPackage onSortChange={handleSortChange} />
           <DrawerDialogAddNewPackage onPackageAdded={fetchPackages} />
           </div>
       </div>
@@ -97,7 +126,7 @@ export default function PackageTable({ initialPackage }: PackageTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {packages.map((pkg) => (
+            {sortedPackages.map((pkg) => (
               <TableRow key={pkg.id}>
                 <TableCell>{pkg.name}</TableCell>
                 <TableCell>{pkg.description}</TableCell>
@@ -110,7 +139,10 @@ export default function PackageTable({ initialPackage }: PackageTableProps) {
                 </TableCell>
                 <TableCell>{pkg.status}</TableCell>
                 <TableCell>
-                  <EditPackageDialog packageId={pkg.id} onPackageUpdated={fetchPackages}/>
+                  <div className="flex gap-2">
+                    <EditPackageDialog packageId={pkg.id} onPackageUpdated={fetchPackages}/>
+                    <DeletePackageDialog packageId={pkg.id} onPackageDeleted={fetchPackages}/> 
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
