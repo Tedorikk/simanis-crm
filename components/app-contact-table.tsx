@@ -1,6 +1,6 @@
-"use client";
+  "use client";
 
-import React, { useState, useEffect } from "react";
+  import React, { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase/supabase";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from 'lucide-react';
